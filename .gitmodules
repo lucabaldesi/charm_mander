@@ -1,0 +1,3 @@
+[submodule "charm_trainer"]
+	path = charm_trainer
+	url = git@github.com:lucabaldesi/charm_trainer.git
