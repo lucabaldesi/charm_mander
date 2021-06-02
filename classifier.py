@@ -2,6 +2,7 @@
 
 
 import charm_trainer.brain as brain
+import charm_trainer.entropy as entropy
 import multiprocessing as mp
 import numpy as np
 import os
@@ -15,6 +16,7 @@ SOCK_BUFF = DATA_UNIT_SIZE
 BRAIN_MODEL = "brain.pt"
 NORMALIZATION = (torch.tensor([-2.7671e-06, -7.3102e-07]).unsqueeze(-1), torch.tensor([0.0002, 0.0002]).unsqueeze(-1))
 LABELS = {0: 'clear', 1: 'LTE', 2: 'WiFi', 3: 'other'}
+MAX_PREDICTIONS = 5
 
 
 class DataCruncher(mp.Process):
@@ -56,10 +58,31 @@ class DataCruncher(mp.Process):
                 with torch.no_grad():
                     data = data.to(self.device, non_blocking=True)
                     output = self.model(data.unsqueeze(0))
-                    _, predicted = torch.max(output, dim=1)
+                    predicted = entropy.output2class(output, 0.666, 3)
                     predicted = predicted[0].item()
                     self.queue.push((self.port, predicted))
                     print(f"{self.port}> predicted: {predicted}")
+
+
+class Channel(object):
+    def __init__(self, port):
+        self.port = port
+        self.predictions = []
+
+    def label(self):
+        if len(self.predictions) > 0:
+            count = {}
+            for pred in self.predictions:
+                count[pred] = count.get(pred, 0) + 1
+            m = max(count.items(), key=lambda x: x[1])
+            return LABELS[m[0]]
+        else:
+            return LABELS[3]
+
+    def add_prediction(self, pred):
+        self.predictions.append(pred)
+        if len(self.predictions) > MAX_PREDICTIONS:
+            self.predictions.pop(0)
 
 
 class Classifier(object):
@@ -67,7 +90,9 @@ class Classifier(object):
         self.workers = []
         mp.set_start_method('spawn')
         self.queue = mp.Queue()
+        self.channels = {}
         for p in ports:
+            self.channels[p] = Channel(p)
             dc = DataCruncher(p, self.queue)
             self.workers.append(dc)
             dc.start()
@@ -81,12 +106,17 @@ class Classifier(object):
         for w in self.workers:
             w.running = False
 
-    def results(self):
-        res = {}
+    def _update_results(self):
         while len(self.queue):
             port, cl = self.queue.get()
-            res[port] = LABELS[cl]
-        return res
+            self.channels[port].add_prediction(cl)
+
+    def get_mapping(self):
+        self._update_results()
+        maps = {}
+        for port, ch in self.channels.items():
+            maps[port] = ch.label()
+        return maps
 
 
 if __name__ == "__main__":
