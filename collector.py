@@ -31,7 +31,9 @@ class collector(gr.top_block):
         # Variables
         ##################################################
         self.samp_rate = samp_rate = 80000000
-        self.payload_size = payload_size = 2*4*20000
+        self.record_size = record_size = 20000
+        self.payload_size = payload_size = 60000
+        self.decimation = decimation = 2
         self.cent_freq = cent_freq = 5210000000
 
         ##################################################
@@ -64,16 +66,24 @@ class collector(gr.top_block):
         self.blocks_udp_sink_0_0_0 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', 6001, payload_size, False)
         self.blocks_udp_sink_0_0 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', 6003, payload_size, False)
         self.blocks_udp_sink_0 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', 6000, payload_size, False)
+        self.blocks_keep_m_in_n_0_0_0_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, record_size, record_size*decimation, 0)
+        self.blocks_keep_m_in_n_0_0_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, record_size, record_size*decimation, 0)
+        self.blocks_keep_m_in_n_0_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, record_size, record_size*decimation, 0)
+        self.blocks_keep_m_in_n_0 = blocks.keep_m_in_n(gr.sizeof_gr_complex, record_size, record_size*decimation, 0)
 
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.pfb_channelizer_hier_ccf_0, 0), (self.blocks_udp_sink_0, 0))
-        self.connect((self.pfb_channelizer_hier_ccf_0, 3), (self.blocks_udp_sink_0_0, 0))
-        self.connect((self.pfb_channelizer_hier_ccf_0, 1), (self.blocks_udp_sink_0_0_0, 0))
-        self.connect((self.pfb_channelizer_hier_ccf_0, 2), (self.blocks_udp_sink_0_0_0_0, 0))
+        self.connect((self.blocks_keep_m_in_n_0, 0), (self.blocks_udp_sink_0, 0))
+        self.connect((self.blocks_keep_m_in_n_0_0, 0), (self.blocks_udp_sink_0_0, 0))
+        self.connect((self.blocks_keep_m_in_n_0_0_0, 0), (self.blocks_udp_sink_0_0_0, 0))
+        self.connect((self.blocks_keep_m_in_n_0_0_0_0, 0), (self.blocks_udp_sink_0_0_0_0, 0))
+        self.connect((self.pfb_channelizer_hier_ccf_0, 0), (self.blocks_keep_m_in_n_0, 0))
+        self.connect((self.pfb_channelizer_hier_ccf_0, 3), (self.blocks_keep_m_in_n_0_0, 0))
+        self.connect((self.pfb_channelizer_hier_ccf_0, 1), (self.blocks_keep_m_in_n_0_0_0, 0))
+        self.connect((self.pfb_channelizer_hier_ccf_0, 2), (self.blocks_keep_m_in_n_0_0_0_0, 0))
         self.connect((self.uhd_usrp_source_0, 0), (self.pfb_channelizer_hier_ccf_0, 0))
 
 
@@ -85,11 +95,35 @@ class collector(gr.top_block):
         self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_source_0.set_bandwidth(self.samp_rate, 0)
 
+    def get_record_size(self):
+        return self.record_size
+
+    def set_record_size(self, record_size):
+        self.record_size = record_size
+        self.blocks_keep_m_in_n_0.set_m(self.record_size)
+        self.blocks_keep_m_in_n_0.set_n(self.record_size*self.decimation)
+        self.blocks_keep_m_in_n_0_0.set_m(self.record_size)
+        self.blocks_keep_m_in_n_0_0.set_n(self.record_size*self.decimation)
+        self.blocks_keep_m_in_n_0_0_0.set_m(self.record_size)
+        self.blocks_keep_m_in_n_0_0_0.set_n(self.record_size*self.decimation)
+        self.blocks_keep_m_in_n_0_0_0_0.set_m(self.record_size)
+        self.blocks_keep_m_in_n_0_0_0_0.set_n(self.record_size*self.decimation)
+
     def get_payload_size(self):
         return self.payload_size
 
     def set_payload_size(self, payload_size):
         self.payload_size = payload_size
+
+    def get_decimation(self):
+        return self.decimation
+
+    def set_decimation(self, decimation):
+        self.decimation = decimation
+        self.blocks_keep_m_in_n_0.set_n(self.record_size*self.decimation)
+        self.blocks_keep_m_in_n_0_0.set_n(self.record_size*self.decimation)
+        self.blocks_keep_m_in_n_0_0_0.set_n(self.record_size*self.decimation)
+        self.blocks_keep_m_in_n_0_0_0_0.set_n(self.record_size*self.decimation)
 
     def get_cent_freq(self):
         return self.cent_freq

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import classifier
+import sys
 import time
 
 
@@ -24,7 +25,7 @@ class CharmMander(object):
         self.ports = ports
         self.detector = classifier.Classifier(ports)
         self.inactive_cell = Cell(1, ports[0])
-        self.active_cell = Cell(2, ports[1])
+        self.active_cell = Cell(2, ports[0])
         self.handover()
         self.hide_and_seek()
 
@@ -38,7 +39,7 @@ class CharmMander(object):
         while True:
             time.sleep(SLEEP_INTERVAL)
             classes = self.detector.get_mapping()
-            print(classes)
+            print(classes, file=sys.stderr)
             policy = {'clear': 3, 'WiFi': 2, 'LTE': 1, 'other': 0}
             classes = {cl: policy[classes[cl]] for cl in classes}
             best_ch, best_value = max(classes.items(), key=lambda x: x[1])

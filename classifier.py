@@ -7,6 +7,7 @@ import multiprocessing as mp
 import numpy as np
 import os
 import socket
+import sys
 import torch
 
 
@@ -16,7 +17,7 @@ SOCK_BUFF = DATA_UNIT_SIZE
 BRAIN_MODEL = "brain.pt"
 NORMALIZATION = (torch.tensor([-2.7671e-06, -7.3102e-07]).unsqueeze(-1), torch.tensor([0.0002, 0.0002]).unsqueeze(-1))
 LABELS = {0: 'clear', 1: 'LTE', 2: 'WiFi', 3: 'other'}
-MAX_PREDICTIONS = 5
+MAX_PREDICTIONS = 10
 
 
 class DataCruncher(mp.Process):
@@ -30,6 +31,8 @@ class DataCruncher(mp.Process):
 
         self.device = (torch.device('cuda') if torch.cuda.is_available()
                       else torch.device('cpu'))
+        self.device = torch.device('cpu')  # set computation on cpu
+
         self.model = brain.CharmBrain(DATA_UNIT)
         self.model.load_state_dict(torch.load(BRAIN_MODEL))
         self.model.to(self.device)
@@ -45,7 +48,7 @@ class DataCruncher(mp.Process):
         while self.running:
             data, _ = self.sock.recvfrom(SOCK_BUFF)
             self.buffer += data
-            print(f"{self.port}> buff size: {len(self.buffer)}")
+            # print(f"{self.port}> buff size: {len(self.buffer)}")
             if len(self.buffer) >= DATA_UNIT_SIZE:
                 data = self.buffer[:DATA_UNIT_SIZE]
                 self.buffer = self.buffer[DATA_UNIT_SIZE:]
@@ -60,8 +63,8 @@ class DataCruncher(mp.Process):
                     output = self.model(data.unsqueeze(0))
                     predicted = entropy.output2class(output, 0.666, 3)
                     predicted = predicted[0].item()
-                    self.queue.push((self.port, predicted))
-                    print(f"{self.port}> predicted: {predicted}")
+                    self.queue.put((self.port, predicted))
+                    print(f"{self.port}> predicted: {predicted}", file=sys.stderr)
 
 
 class Channel(object):
@@ -119,4 +122,5 @@ class Classifier(object):
 
 
 if __name__ == "__main__":
-    c = Classifier([6000, 6001, 6002, 6003])
+    c = Classifier([6000])
+    c.join_all()
