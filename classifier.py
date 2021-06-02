@@ -96,7 +96,6 @@ class Classifier(object):
             dc = DataCruncher(p, self.queue)
             self.workers.append(dc)
             dc.start()
-        self.join_all()
 
     def join_all(self):
         for w in self.workers:
@@ -107,7 +106,7 @@ class Classifier(object):
             w.running = False
 
     def _update_results(self):
-        while len(self.queue):
+        while not self.queue.empty():
             port, cl = self.queue.get()
             self.channels[port].add_prediction(cl)
 
