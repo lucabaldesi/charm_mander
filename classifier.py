@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 
+from __future__ import print_function
 import charm_trainer.brain as brain
 import charm_trainer.entropy as entropy
 import multiprocessing as mp
@@ -64,7 +65,7 @@ class DataCruncher(mp.Process):
                     predicted = entropy.output2class(output, 0.666, 3)
                     predicted = predicted[0].item()
                     self.queue.put((self.port, predicted))
-                    print(f"{self.port}> predicted: {predicted}", file=sys.stderr)
+                    print("%d > predicted: %d" % (self.port, predicted), file=sys.stderr)
 
 
 class Channel(object):

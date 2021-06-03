@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from __future__ import print_function
 import classifier
 import sys
 import time
@@ -16,7 +17,7 @@ class Cell(object):
 
     def set_frequency(self, port):
         self.current_port = port
-        print(f"earfcn {self.cell_id} {EARFCN_MAPPING[self.current_port]}")
+        print("earfcn %d %d" % (self.cell_id, EARFCN_MAPPING[self.current_port]))
 
 
 class CharmMander(object):
@@ -33,7 +34,7 @@ class CharmMander(object):
         tmp = self.active_cell
         self.active_cell = self.inactive_cell
         self.inactive_cell = tmp
-        print(f"handover {self.inactive_cell.cell_id} {self.active_cell.cell_id}")
+        print("handover %d %d" % (self.inactive_cell.cell_id, self.active_cell.cell_id))
 
     def hide_and_seek(self):
         while True:
