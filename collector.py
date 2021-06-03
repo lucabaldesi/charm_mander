@@ -51,7 +51,8 @@ class collector(gr.top_block):
         self.uhd_usrp_source_0.set_gain(0, 0)
         self.uhd_usrp_source_0.set_antenna('RX2', 0)
         self.uhd_usrp_source_0.set_bandwidth(samp_rate, 0)
-        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_source_0.set_clock_rate(200e6, uhd.ALL_MBOARDS)
+        self.uhd_usrp_source_0.set_samp_rate(samp_rate/8*10)
         self.uhd_usrp_source_0.set_time_now(uhd.time_spec(time.time()), uhd.ALL_MBOARDS)
         self.pfb_channelizer_hier_ccf_0 = pfb.channelizer_hier_ccf(
             4,
@@ -92,8 +93,9 @@ class collector(gr.top_block):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate/8*10)
         self.uhd_usrp_source_0.set_bandwidth(self.samp_rate, 0)
+        self.uhd_usrp_source_0.set_bandwidth(self.samp_rate/2, 1)
 
     def get_record_size(self):
         return self.record_size
@@ -131,6 +133,7 @@ class collector(gr.top_block):
     def set_cent_freq(self, cent_freq):
         self.cent_freq = cent_freq
         self.uhd_usrp_source_0.set_center_freq(self.cent_freq, 0)
+        self.uhd_usrp_source_0.set_center_freq(self.cent_freq+20000000, 1)
 
 
 

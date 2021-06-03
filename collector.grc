@@ -264,7 +264,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [384, 234]
+    coordinate: [381, 273]
     rotation: 0
     state: true
 - name: uhd_usrp_source_0
@@ -305,7 +305,7 @@ blocks:
     ant8: RX2
     ant9: RX2
     bw0: samp_rate
-    bw1: '0'
+    bw1: samp_rate/2
     bw10: '0'
     bw11: '0'
     bw12: '0'
@@ -337,7 +337,7 @@ blocks:
     bw8: '0'
     bw9: '0'
     center_freq0: cent_freq
-    center_freq1: '0'
+    center_freq1: cent_freq+20000000
     center_freq10: '0'
     center_freq11: '0'
     center_freq12: '0'
@@ -368,7 +368,7 @@ blocks:
     center_freq7: '0'
     center_freq8: '0'
     center_freq9: '0'
-    clock_rate: 0e0
+    clock_rate: 200e6
     clock_source0: ''
     clock_source1: ''
     clock_source2: ''
@@ -609,7 +609,7 @@ blocks:
     rx_agc7: Default
     rx_agc8: Default
     rx_agc9: Default
-    samp_rate: samp_rate
+    samp_rate: samp_rate/8*10
     sd_spec0: ''
     sd_spec1: ''
     sd_spec2: ''
@@ -635,7 +635,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [80, 259]
+    coordinate: [51, 280]
     rotation: 0
     state: true
 
