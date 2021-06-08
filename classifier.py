@@ -35,7 +35,7 @@ class DataCruncher(mp.Process):
         self.device = torch.device('cpu')  # set computation on cpu
 
         self.model = brain.CharmBrain(DATA_UNIT)
-        self.model.load_state_dict(torch.load(BRAIN_MODEL))
+        self.model.load_state_dict(torch.load(BRAIN_MODEL, map_location=torch.device('cpu')))
         self.model.to(self.device)
         self.model.eval()
 

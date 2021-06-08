@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 #
@@ -52,6 +52,8 @@ class hop_sensing(gr.top_block):
         self.uhd_usrp_source_0.set_bandwidth(bandwidth, 0)
         self.uhd_usrp_source_0.set_samp_rate(samp_rate)
         self.uhd_usrp_source_0.set_time_now(uhd.time_spec(time.time()), uhd.ALL_MBOARDS)
+
+        self.head = blocks.skiphead(gr.sizeof_gr_complex, 20000*1000)
         self.blocks_udp_sink_0 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', dst_port, payload_size, False)
         self.blocks_udp_sink_1 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', dst_port+1, payload_size, False)
         self.blocks_udp_sink_2 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', dst_port+2, payload_size, False)
@@ -62,7 +64,8 @@ class hop_sensing(gr.top_block):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.uhd_usrp_source_0, 0), (self.blocks_udp_sink_3, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.head, 0))
+        self.connect((self.head, 0), (self.blocks_udp_sink_3, 0))
 
 
     def get_samp_rate(self):
@@ -128,16 +131,16 @@ def main():
     while True:
         for freq, port in channels:
             tb.lock()
-            tb.disconnect((tb.uhd_usrp_source_0, 0), (current_port, 0))
+            tb.disconnect((tb.head, 0), (current_port, 0))
+            tb.disconnect((tb.uhd_usrp_source_0, 0), (tb.head, 0))
             tb.set_cent_freq(freq)
-            tb.unlock()
-            time.sleep(0.125)
-
-            tb.lock()
+            tb.head = blocks.skiphead(gr.sizeof_gr_complex, 20000*500)
+            tb.connect((tb.uhd_usrp_source_0, 0), (tb.head, 0))
             current_port = port
-            tb.connect((tb.uhd_usrp_source_0, 0), (current_port, 0))
+            tb.connect((tb.head, 0), (current_port, 0))
             tb.unlock()
-            time.sleep(0.125)
+            time.sleep(0.55)
+
     tb.stop()
     tb.wait()
 
