@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #
@@ -53,7 +53,8 @@ class hop_sensing(gr.top_block):
         self.uhd_usrp_source_0.set_samp_rate(samp_rate)
         self.uhd_usrp_source_0.set_time_now(uhd.time_spec(time.time()), uhd.ALL_MBOARDS)
 
-        self.head = blocks.skiphead(gr.sizeof_gr_complex, 20000*1000)
+        self.skiphead = blocks.skiphead(gr.sizeof_gr_complex, 20000*1000)
+        self.head = blocks.head(gr.sizeof_gr_complex, 20000*2)
         self.blocks_udp_sink_0 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', dst_port, payload_size, False)
         self.blocks_udp_sink_1 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', dst_port+1, payload_size, False)
         self.blocks_udp_sink_2 = blocks.udp_sink(gr.sizeof_gr_complex*1, '127.0.0.1', dst_port+2, payload_size, False)
@@ -64,7 +65,8 @@ class hop_sensing(gr.top_block):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.uhd_usrp_source_0, 0), (self.head, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.skiphead, 0))
+        self.connect((self.skiphead, 0), (self.head, 0))
         self.connect((self.head, 0), (self.blocks_udp_sink_3, 0))
 
 
@@ -132,10 +134,13 @@ def main():
         for freq, port in channels:
             tb.lock()
             tb.disconnect((tb.head, 0), (current_port, 0))
-            tb.disconnect((tb.uhd_usrp_source_0, 0), (tb.head, 0))
+            tb.disconnect((tb.skiphead, 0), (tb.head, 0))
+            tb.disconnect((tb.uhd_usrp_source_0, 0), (tb.skiphead, 0))
             tb.set_cent_freq(freq)
-            tb.head = blocks.skiphead(gr.sizeof_gr_complex, 20000*500)
-            tb.connect((tb.uhd_usrp_source_0, 0), (tb.head, 0))
+            tb.skiphead = blocks.skiphead(gr.sizeof_gr_complex, 20000*500)
+            tb.head = blocks.head(gr.sizeof_gr_complex, 20000*2)
+            tb.connect((tb.uhd_usrp_source_0, 0), (tb.skiphead, 0))
+            tb.connect((tb.skiphead, 0), (tb.head, 0))
             current_port = port
             tb.connect((tb.head, 0), (current_port, 0))
             tb.unlock()
