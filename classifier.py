@@ -18,7 +18,7 @@ SOCK_BUFF = DATA_UNIT_SIZE
 BRAIN_MODEL = "brain.pt"
 NORMALIZATION = (torch.tensor([-2.7671e-06, -7.3102e-07]).unsqueeze(-1), torch.tensor([0.0002, 0.0002]).unsqueeze(-1))
 LABELS = {0: 'clear', 1: 'LTE', 2: 'WiFi', 3: 'other'}
-MAX_PREDICTIONS = 10
+MAX_PREDICTIONS = 5
 
 
 class DataCruncher(mp.Process):

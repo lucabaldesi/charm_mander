@@ -61,7 +61,7 @@ class CharmMander(object):
             log(classes)
             log("active: %d inactive: %d", (self.active_cell.current_port, self.inactive_cell.current_port))
             current_class = classes[self.active_cell.current_port]
-            if current_class != 'clean' and current_class != 'LTE':
+            if current_class != 'clear' and current_class != 'LTE':
                 policy = {'clear': 3, 'WiFi': 2, 'LTE': 1, 'other': 0}
                 classes = {cl: policy[classes[cl]] for cl in classes}
                 best_ch, best_value = max(classes.items(), key=lambda x: x[1])
