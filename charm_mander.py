@@ -7,7 +7,7 @@ import time
 
 
 EARFCN_MAPPING = {6000: 47090, 6001: 47290, 6002: 47490, 6003: 47690}
-SLEEP_INTERVAL = 5
+SLEEP_INTERVAL = 1
 
 
 def send_cmd(fmt, args):
@@ -51,7 +51,7 @@ class CharmMander(object):
         tmp = self.active_cell
         self.active_cell = self.inactive_cell
         self.inactive_cell = tmp
-        time.sleep(0.3)
+        time.sleep(0.5)
         send_cmd("handover %d %d", (self.inactive_cell.cell_id, self.active_cell.cell_id))
         log("handovering %d %d", (self.inactive_cell.cell_id, self.active_cell.cell_id))
         self.active_cell.coexisting = coexisting
@@ -65,7 +65,7 @@ class CharmMander(object):
             current_class = classes[self.active_cell.current_port]
             handover = False
             if current_class != 'clear' and current_class != 'LTE':
-                policy = {'clear': 3, 'WiFi': 2, 'LTE': 1, 'other': 0}
+                policy = {'clear': 3, 'WiFi': 1, 'LTE': 2, 'other': 0}
                 classes = {cl: policy[classes[cl]] for cl in classes}
                 best_ch, best_value = max(classes.items(), key=lambda x: x[1])
 

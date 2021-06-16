@@ -19,6 +19,7 @@ BRAIN_MODEL = "brain.pt"
 NORMALIZATION = (torch.tensor([-2.7671e-06, -7.3102e-07]).unsqueeze(-1), torch.tensor([0.0002, 0.0002]).unsqueeze(-1))
 LABELS = {0: 'clear', 1: 'LTE', 2: 'WiFi', 3: 'other'}
 MAX_PREDICTIONS = 5
+CLASS_THRESHOLD = 0.7
 
 
 class DataCruncher(mp.Process):
@@ -62,10 +63,10 @@ class DataCruncher(mp.Process):
                 with torch.no_grad():
                     data = data.to(self.device, non_blocking=True)
                     output = self.model(data.unsqueeze(0))
-                    predicted = entropy.output2class(output, 0.666, 3)
+                    predicted = entropy.output2class(output, CLASS_THRESHOLD, 3)
                     predicted = predicted[0].item()
                     self.queue.put((self.port, predicted))
-                    print("%d > predicted: %d" % (self.port, predicted), file=sys.stderr)
+                    # print("%d > predicted: %d" % (self.port, predicted), file=sys.stderr)
 
 
 class Channel(object):
